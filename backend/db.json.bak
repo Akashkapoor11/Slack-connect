@@ -1,0 +1,35 @@
+{
+  "tokens": [
+    {
+      "workspace_id": "T12345",
+      "access_token": "xoxp-ACCESS-TOKEN",
+      "refresh_token": "xoxr-REFRESH-TOKEN",
+      "expires_at": 1700000000
+    }
+  ],
+  "scheduledMessages": [
+    {
+      "id": "msg_1757363959431",
+      "channelId": "C09DN84H4M9",
+      "text": "Scheduled test from curl",
+      "post_at": 1715432100,
+      "status": "sent",
+      "sent_at": 1757364000
+    },
+    {
+      "id": "msg_1757366902009",
+      "channelId": "C09DN84H4M9",
+      "text": "Scheduled test immediate",
+      "post_at": 1715432100,
+      "status": "sent",
+      "sent_at": 1757366941
+    },
+    {
+      "id": "msg_1757367788557",
+      "channelId": "C09DN84H4M9",
+      "text": "hii",
+      "post_at": 1757434560,
+      "status": "cancelled"
+    }
+  ]
+}

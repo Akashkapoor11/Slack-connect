@@ -1,0 +1,26 @@
+{
+  "tokens": [],
+  "scheduledMessages": [
+    {
+      "id": "msg_1757404036351",
+      "channelId": "C09DN84H4M9",
+      "text": "hi..",
+      "post_at": 1757470380,
+      "status": "cancelled"
+    },
+    {
+      "id": "msg_1757409947515",
+      "channelId": "C09DN84H4M9",
+      "text": "hi",
+      "post_at": 1757476800,
+      "status": "cancelled"
+    },
+    {
+      "id": "msg_1757411334488",
+      "channelId": "C09DN84H4M9",
+      "text": "hi",
+      "post_at": 1757478120,
+      "status": "cancelled"
+    }
+  ]
+}

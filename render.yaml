@@ -1,0 +1,19 @@
+﻿services:
+  - type: web
+    name: slack-connect-backend
+    env: docker
+    branch: main
+    repo: https://github.com/Akashkapoor11/Slack-connect
+    dockerfilePath: backend/Dockerfile
+    rootDir: backend
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: SLACK_CLIENT_ID
+        sync: false        # secret — set value in Render Dashboard
+      - key: SLACK_CLIENT_SECRET
+        sync: false        # secret — set value in Render Dashboard
+      - key: SLACK_BOT_TOKEN
+        sync: false        # secret — set value in Render Dashboard
+      - key: BASE_URL
+        value: "https://slack-connect-backend.onrender.com"  # safe to store in repo if public
