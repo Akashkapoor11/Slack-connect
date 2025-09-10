@@ -40,6 +40,8 @@ chat:write.customize
 
 ## Important: Add your bot to each Slack channel you want to send messages to.
 
+<!-- Failed to upload "slack.mp4" -->
+
 ## Getting Started
 1. Clone the repo
 git clone https://github.com/your-username/slack-connect.git
@@ -80,8 +82,6 @@ Frontend runs at 👉 http://localhost:3000
 ## Backend Link- https://slack-connect-h0o6.onrender.com
 
 <img width="1909" height="1026" alt="Image" src="https://github.com/user-attachments/assets/ac39f71b-58db-4de5-b7c2-c86cdacb3603" />
-
-<!-- Failed to upload "slack.mp4" -->
 
 ## Usage
 
