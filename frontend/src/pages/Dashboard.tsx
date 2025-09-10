@@ -5,9 +5,8 @@ import {
   scheduleMessage,
   getScheduledMessages,
   cancelScheduledMessage,
-  // runScheduler, // optional if you added that debug endpoint
 } from "../services/api";
-import "./Dashboard.css"; // optional - keep if you have styles
+import "./Dashboard.css";
 
 type Channel = { id: string; name: string };
 type Msg = {
@@ -30,34 +29,65 @@ export default function Dashboard(): React.JSX.Element {
   });
   const [scheduled, setScheduled] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // initial load
+  // fetch channels + scheduled ONCE on mount
   useEffect(() => {
+    let mounted = true;
     (async () => {
       try {
+        console.debug("[DEBUG] fetching channels...");
         const ch = await getChannels();
-        setChannels(ch);
-        if (ch && ch.length && !channelId) setChannelId(ch[0].id);
-      } catch (err) {
+        console.debug("[DEBUG] raw channels response:", ch);
+        // normalize: if backend returns { channels: [...] } or direct array
+        const normalizedChannels: Channel[] = Array.isArray(ch) ? ch : ch?.channels ?? [];
+        if (!mounted) return;
+        setChannels(normalizedChannels);
+      } catch (err: any) {
         console.error("Failed to load channels", err);
+        setErrorMsg(err?.response?.data?.error || err?.message || "Failed to load channels");
       }
 
-      await refreshScheduled();
+      try {
+        console.debug("[DEBUG] fetching scheduled messages...");
+        const list = await getScheduledMessages();
+        console.debug("[DEBUG] raw scheduled response:", list);
+        const normalized = (Array.isArray(list) ? list : list?.messages ?? []).map((m: any) => ({
+          ...m,
+          post_at: typeof m.post_at === "string" ? Number(m.post_at) : m.post_at,
+        }));
+        normalized.sort((a: Msg, b: Msg) => b.post_at - a.post_at);
+        if (!mounted) return;
+        setScheduled(normalized);
+      } catch (err) {
+        console.warn("Could not load scheduled messages", err);
+      }
     })();
 
     const id = setInterval(() => {
-      refreshScheduled();
+      refreshScheduled(); // keep scheduled list reasonably fresh
     }, 10_000);
 
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      mounted = false;
+      clearInterval(id);
+    };
+    // empty deps -> run once on mount
   }, []);
 
+  // set default channel when channels arrive (separate effect to satisfy eslint)
+  useEffect(() => {
+    if (channels.length > 0 && !channelId) {
+      console.debug("[DEBUG] setting default channel to first channel:", channels[0]);
+      setChannelId(channels[0].id);
+    }
+  }, [channels, channelId]);
+
+  // refresh scheduled messages (callable)
   const refreshScheduled = async () => {
     try {
       const list = await getScheduledMessages();
-      // ensure post_at numeric and sort newest first
-      const normalized = (list || []).map((m: any) => ({
+      const normalized = (Array.isArray(list) ? list : list?.messages ?? []).map((m: any) => ({
         ...m,
         post_at: typeof m.post_at === "string" ? Number(m.post_at) : m.post_at,
       }));
@@ -68,22 +98,23 @@ export default function Dashboard(): React.JSX.Element {
     }
   };
 
+  // send now
   const handleSendNow = async () => {
     if (!channelId || !text) return alert("Channel and message required");
     setLoading(true);
     try {
+      console.debug("[DEBUG] sending message to channel:", channelId, text);
       await sendMessage(channelId, text);
-
-      // immediately reflect in UI as 'sent'
+      const nowSec = Math.floor(Date.now() / 1000);
       const newMsg: Msg = {
         id: `local_${Date.now()}`,
         channelId,
         text,
-        post_at: Math.floor(Date.now() / 1000),
+        post_at: nowSec,
         status: "sent",
-        sent_at: Math.floor(Date.now() / 1000),
+        sent_at: nowSec,
       };
-      setScheduled((prev: Msg[]) => [newMsg, ...prev]);
+      setScheduled((prev) => [newMsg, ...prev]);
       setText("");
     } catch (err: any) {
       console.error("Send failed", err);
@@ -93,13 +124,12 @@ export default function Dashboard(): React.JSX.Element {
     }
   };
 
+  // schedule
   const handleSchedule = async () => {
-    // normalize and validate inputs
     if (!channelId || !text || !postAt) return alert("channel, message and date/time required");
 
-    // turn datetime-local into milliseconds then seconds
-    const normalized = postAt.includes("T") ? postAt : postAt.replace(" ", "T");
-    const ms = Date.parse(normalized);
+    const normalizedIso = postAt.includes("T") ? postAt : postAt.replace(" ", "T");
+    const ms = Date.parse(normalizedIso);
     if (Number.isNaN(ms)) return alert("Invalid date/time — choose a valid future time.");
     const postAtSec = Math.floor(ms / 1000);
     const nowSec = Math.floor(Date.now() / 1000);
@@ -107,23 +137,21 @@ export default function Dashboard(): React.JSX.Element {
 
     setLoading(true);
     try {
+      console.debug("[DEBUG] scheduling message:", { channelId, text, postAtSec });
       const res = await scheduleMessage(channelId, text, postAtSec);
-      // build typed Msg using server id if provided
+      // res may contain id or scheduled_message_id
       const newEntry: Msg = {
-        id: String((res && (res as any).id) || `local_${Date.now()}`),
+        id: String((res && (res as any).id) || (res && (res as any).scheduled_message_id) || `local_${Date.now()}`),
         channelId,
         text,
         post_at: postAtSec,
         status: "scheduled",
       };
-      setScheduled((prev: Msg[]) => [newEntry, ...prev]);
+      setScheduled((prev) => [newEntry, ...prev]);
       setText("");
-
-      // reset postAt to next default (now + 5min)
       const next = new Date();
       next.setMinutes(next.getMinutes() + 5);
       setPostAt(next.toISOString().slice(0, 16));
-
       alert("Message scheduled");
     } catch (err: any) {
       console.error("Schedule failed", err);
@@ -150,6 +178,8 @@ export default function Dashboard(): React.JSX.Element {
         <h1 style={{ margin: 0 }}>Slack Connect — Dashboard</h1>
         <p style={{ color: "#666", marginTop: 6 }}>Send or schedule messages to your Slack channels</p>
       </header>
+
+      {errorMsg && <div style={{ color: "red", marginBottom: 12 }}>{errorMsg}</div>}
 
       <main style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 20 }}>
         <section style={{ padding: 18, borderRadius: 12, background: "#fff", boxShadow: "0 6px 18px rgba(0,0,0,0.06)" }}>
@@ -226,6 +256,13 @@ export default function Dashboard(): React.JSX.Element {
       </main>
 
       <footer style={{ marginTop: 18, color: "#777" }}>made by Akash Kapoor</footer>
+
+      {/* debug */}
+      {/* status (hidden in production) */}
+<div style={{ marginTop: 12, color: "#999", fontSize: 12 }}>
+  Connected — {channels.length} channels, {scheduled.length} scheduled
+</div>
+
     </div>
   );
 }
