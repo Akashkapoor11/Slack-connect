@@ -76,8 +76,12 @@ npm start
 Frontend runs at 👉 http://localhost:3000
 
 <img width="1909" height="1026" alt="Image" src="https://github.com/user-attachments/assets/ac39f71b-58db-4de5-b7c2-c86cdacb3603" />
+
 ## Frontend Link- https://slack-connect-frontend1-lq5j.onrender.com/
 ## Backend Link- https://slack-connect-h0o6.onrender.com
+
+<img width="1909" height="1026" alt="Image" src="https://github.com/user-attachments/assets/ac39f71b-58db-4de5-b7c2-c86cdacb3603" />
+
 
 ## Usage
 
