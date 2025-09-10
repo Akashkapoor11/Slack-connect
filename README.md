@@ -82,7 +82,7 @@ Frontend runs at 👉 http://localhost:3000
 ## Backend Link- https://slack-connect-h0o6.onrender.com
 
 <img width="1909" height="1026" alt="Image" src="https://github.com/user-attachments/assets/ac39f71b-58db-4de5-b7c2-c86cdacb3603" />
-https://github.com/user-attachments/assets/2ce375b2-92eb-40ab-a948-fc78d4fbe98f
+## Video Link- https://www.youtube.com/watch?v=y_IB_7cINms
 
 ## Usage
 
