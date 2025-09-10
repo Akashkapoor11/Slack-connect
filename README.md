@@ -75,6 +75,9 @@ npm start
 
 Frontend runs at 👉 http://localhost:3000
 
+## Frontend Link- https://slack-connect-frontend1-lq5j.onrender.com/
+## Backend Link- https://slack-connect-h0o6.onrender.com
+
 ## Usage
 
 Go to the frontend UI (http://localhost:3000)
